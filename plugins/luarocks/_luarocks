@@ -53,6 +53,7 @@ case "$words[1]" in
   build)
     _arguments \
       '(--pack-binary-rock)--pack-binary-rock[Generate a .rock with the contents of the compilation but do not install it.]' ;;
+
   download)
     _arguments \
       '(--all)--all[Download all files if there are multiple matches.]' \
@@ -60,26 +61,7 @@ case "$words[1]" in
       '(--source)--source[Download .src.rock if available.]' \
       '(--rockspec)--rockspec[Download .rockspec if available.]' \
       '(--arch=<arch>)--arch=[Download rock for a specific architecture.]' ;;
-  make)
-    _arguments \
-      '(--pack-binary-rock)--pack-binary-rock[Generate a .rock with the contents of the compilation but do not install it.]' ;;
-  remove)
-    _arguments \
-      '(--force)--force[Force removal if it breaks dependencies.]' ;;
-  search)
-    _arguments \
-      '(--all)--all[List all rocks suitable for this platform, do not filter by name]' \
-      '(--binary)--binary[Return only pure Lua and binary rocks (those that can be installed without a C toolchain)]' \
-      '(--source)--source[Return only rockspecs ans source rocks, to be used with the "build" command]' ;;
-  show)
-    _arguments \
-      '(--home)--home[home page of the project]' \
-      '(--modules)--modules[all modules provided by this package as used by require()]' \
-      '(--deps)--deps[packages this package depends on]' \
-      '(--rockspec)--rockspec[the full path of the rockspec file]' \
-      '(--mversion)--mversion[the package version]' \
-      '(--tree)--tree[local tree where rock is installed]' \
-      '(--rock-dir)--rock-dir[data directory of the installed rock]' ;;
+
   install)
   	_arguments \
       '1: :->rocks' &&  return 0
@@ -88,7 +70,49 @@ case "$words[1]" in
         _rocks_all
         _wanted rockslist expl 'rocks' compadd -a rockslist
       fi ;;
-  uninstall)
-    _rocks_installed
-    _wanted installed_rocks expl 'installed rocks' compadd -a installed_rocks ;;
+
+  list)
+  	_arguments \
+      '1: :->rocks' &&  return 0
+
+      if [[ "$state" == rocks ]]; then
+        _rocks_installed
+        _wanted installed_rocks expl 'installed rocks' compadd -a installed_rocks
+      fi ;;
+
+  make)
+    _arguments \
+      '(--pack-binary-rock)--pack-binary-rock[Generate a .rock with the contents of the compilation but do not install it.]' ;;
+
+  remove)
+    _arguments \
+      '(--force)--force[Force removal if it breaks dependencies.]' \
+      '1: :->rocks' &&  return 0
+
+      if [[ "$state" == rocks ]]; then
+        _rocks_installed
+        _wanted installed_rocks expl 'installed rocks' compadd -a installed_rocks
+      fi ;;
+
+  search)
+    _arguments \
+      '(--all)--all[List all rocks suitable for this platform, do not filter by name]' \
+      '(--binary)--binary[Return only pure Lua and binary rocks (those that can be installed without a C toolchain)]' \
+      '(--source)--source[Return only rockspecs ans source rocks, to be used with the "build" command]' ;;
+
+  show)
+    _arguments \
+      '(--home)--home[home page of the project]' \
+      '(--modules)--modules[all modules provided by this package as used by require()]' \
+      '(--deps)--deps[packages this package depends on]' \
+      '(--rockspec)--rockspec[the full path of the rockspec file]' \
+      '(--mversion)--mversion[the package version]' \
+      '(--tree)--tree[local tree where rock is installed]' \
+      '(--rock-dir)--rock-dir[data directory of the installed rock]' \
+      '1: :->rocks' &&  return 0
+
+      if [[ "$state" == rocks ]]; then
+        _rocks_installed
+        _wanted installed_rocks expl 'installed rocks' compadd -a installed_rocks
+      fi ;;
 esac
