@@ -1,0 +1,94 @@
+#compdef luarocks
+#autoload
+
+# luarocks zsh completion, based on pip plugin (originally based on homebrew completion)
+
+_rocks_all() {
+  # we cache the list of packages (originally from the macports plugin)
+  if (( ! $+rockslist )); then
+    echo -n " (caching rocks index...)"
+	rockslist=($(luarocks search --all | grep -E '^\w+$' | uniq))
+  fi
+}
+
+_rocks_installed() {
+  installed_rocks=(`luarocks list | grep -E '^\w+$'`)
+}
+
+local -a _1st_arguments
+_1st_arguments=(
+  'build:Build/compile a rock.'
+  'download:Download a specific rock from a rocks server.'
+  'help:Help on commands. Type "luarocks help <command> for more.'
+  'install:Install a rock.'
+  'list:Lists currently installed rocks.'
+  'make:Compile package in current directory using a rockspec.'
+  'new_version:Auto-write a rockspec for a new version of a rock.'
+  'pack:Create a rock, packing sources or binaries.'
+  'path:Return the currently configured package path.'
+  'remove:Uninstall a rock.'
+  'search:Query the LuaRocks servers.'
+  'show:Show information about an installed rock.'
+  'unpack:Unpack the contents of a rock.'
+)
+
+local expl
+local -a all_rocks installed_rocks
+
+_arguments \
+  '(--server=<server>)--server=[Fetch rocks/rockspecs from this server]' \
+  '(--only-server=<server>)--only-server=[Fetch rocks/rockspecs from this server only]' \
+  '(--only-sources=<url>)--only-sources=[Restrict downloads to paths matching the given URL]' \
+  '(--tree=<tree>)--tree=[Which tree to operate on]' \
+  "(--local)--local=[Use tree in the user's home directory]" \
+  '(--help)--help[show help]' \
+  '*:: :->subcmds' && return 0
+
+if (( CURRENT == 1 )); then
+  _describe -t commands "luarocks subcommand" _1st_arguments
+  return
+fi
+
+case "$words[1]" in
+  build)
+    _arguments \
+      '(--pack-binary-rock)--pack-binary-rock[Generate a .rock with the contents of the compilation but do not install it.]' ;;
+  download)
+    _arguments \
+      '(--all)--all[Download all files if there are multiple matches.]' \
+      '(--source)--source[Download .src.rock if available.]' \
+      '(--source)--source[Download .src.rock if available.]' \
+      '(--rockspec)--rockspec[Download .rockspec if available.]' \
+      '(--arch=<arch>)--arch=[Download rock for a specific architecture.]' ;;
+  make)
+    _arguments \
+      '(--pack-binary-rock)--pack-binary-rock[Generate a .rock with the contents of the compilation but do not install it.]' ;;
+  remove)
+    _arguments \
+      '(--force)--force[Force removal if it breaks dependencies.]' ;;
+  search)
+    _arguments \
+      '(--all)--all[List all rocks suitable for this platform, do not filter by name]' \
+      '(--binary)--binary[Return only pure Lua and binary rocks (those that can be installed without a C toolchain)]' \
+      '(--source)--source[Return only rockspecs ans source rocks, to be used with the "build" command]' ;;
+  show)
+    _arguments \
+      '(--home)--home[home page of the project]' \
+      '(--modules)--modules[all modules provided by this package as used by require()]' \
+      '(--deps)--deps[packages this package depends on]' \
+      '(--rockspec)--rockspec[the full path of the rockspec file]' \
+      '(--mversion)--mversion[the package version]' \
+      '(--tree)--tree[local tree where rock is installed]' \
+      '(--rock-dir)--rock-dir[data directory of the installed rock]' ;;
+  install)
+  	_arguments \
+      '1: :->rocks' &&  return 0
+     
+      if [[ "$state" == rocks ]]; then
+        _rocks_all
+        _wanted rockslist expl 'rocks' compadd -a rockslist
+      fi ;;
+  uninstall)
+    _rocks_installed
+    _wanted installed_rocks expl 'installed rocks' compadd -a installed_rocks ;;
+esac
