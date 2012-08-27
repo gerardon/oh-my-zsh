@@ -60,7 +60,16 @@ case "$words[1]" in
       '(--source)--source[Download .src.rock if available.]' \
       '(--source)--source[Download .src.rock if available.]' \
       '(--rockspec)--rockspec[Download .rockspec if available.]' \
-      '(--arch=<arch>)--arch=[Download rock for a specific architecture.]' ;;
+      '(--arch=<arch>)--arch=[Download rock for a specific architecture.]' \
+      '1: :->rocks' &&  return 0
+
+      if [[ "$state" == rocks ]]; then
+        _rocks_all
+        _wanted rockslist expl 'rocks' compadd -a rockslist
+      fi ;;
+
+  help)
+      _describe -t commands "luarocks subcommand" _1st_arguments ;;
 
   install)
   	_arguments \
